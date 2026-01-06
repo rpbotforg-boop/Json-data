@@ -32,7 +32,7 @@ LOG_CHAT_ID = -1003481794992   # Log Group ID yahan dalein
 bot = Client("final_search_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # Auth Filter
-auth_filter = filters.create(lambda _, __, m: m.from_user.id in SUDO_USERS)
+auth_filter = filters.create(lambda _, __, message: message.from_user and message.from_user.id in SUDO_USERS)
 
 # --- START & MENU UI ---
 @bot.on_message(filters.command("start") & filters.private)
