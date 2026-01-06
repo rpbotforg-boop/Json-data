@@ -5,10 +5,10 @@ from pyrogram.types import Message
 from search_engine import format_detailed_result
 
 # --- CONFIG ---
-API_ID = 1234567  # Replace with yours
-API_HASH = "your_hash" 
-BOT_TOKEN = "your_token"
-SUDO_USERS = [12345678] # Replace with your Telegram User ID
+API_ID = 22447622  # Replace with yours
+API_HASH = "543b62d58d3e723e766ba57a984ab65d" 
+BOT_TOKEN = "8523789813:AAGN7UPz54iFcxfdmsHYGMbS3rpmhGEYT8k"
+SUDO_USERS = [777756062] # Replace with your Telegram User ID
 
 bot = Client("secure_search_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
