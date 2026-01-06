@@ -85,7 +85,10 @@ async def search_handler(client, message):
         await msg.edit(f"❌ Error: `{e}`")
 
 if __name__ == "__main__":
-    keep_alive() # Starts Flask Web Server
-    print("🚀 Bot and Web Server starting...")
-    bot.run()
+    print("🚀 Starting Web Server...")
+    keep_alive()  # Flask ko background thread mein start karega
+    
+    print("🤖 Starting Telegram Bot...")
+    bot.run()     # Bot ko main thread mein rakhega
+
 
