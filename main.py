@@ -2,29 +2,35 @@ import os
 import requests
 from pyrogram import Client, filters
 from pyrogram.types import Message
+from flask import Flask
+from threading import Thread
 from search_engine import format_detailed_result
 
-# --- CONFIG ---
-API_ID = 22447622  # Replace with yours
-API_HASH = "543b62d58d3e723e766ba57a984ab65d" 
-BOT_TOKEN = "8523789813:AAGN7UPz54iFcxfdmsHYGMbS3rpmhGEYT8k"
-SUDO_USERS = [777756062] # Replace with your Telegram User ID
-import os
-import requests
-from pyrogram import Client, filters
-from pyrogram.types import Message
-from search_engine import format_detailed_result
+# --- RENDER WEB SERVICE SUPPORT (DO NOT REMOVE) ---
+app = Flask(__name__)
+@app.route('/')
+def home():
+    return "Bot is Running 24/7!"
 
-# --- CONFIG ---
-API_ID = 22447622 
-API_HASH = "543b62d58d3e723e766ba57a984ab65d"
-BOT_TOKEN = "8523789813:AAGN7UPz54iFcxfdmsHYGMbS3rpmhGEYT8k"
-SUDO_USERS = [777756062] # Apni TG ID yahan dalein
-LOG_CHAT_ID = -1003481794992 # Log Group/Channel ID
+def run():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
 
-bot = Client("deep_search_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+def keep_alive():
+    t = Thread(target=run)
+    t.daemon = True
+    t.start()
 
-# Authorization Filter
+# --- BOT CONFIGURATION ---
+API_ID = 22447622           # Apna API ID dalein
+API_HASH = "543b62d58d3e723e766ba57a984ab65d"      # Apna API Hash dalein
+BOT_TOKEN = "8523789813:AAGN7UPz54iFcxfdmsHYGMbS3rpmhGEYT8k"    # Apna Bot Token dalein
+SUDO_USERS = [777756062]     # Apni Telegram ID dalein
+LOG_CHAT_ID = -1003481794992   # Log Group/Channel ID dalein
+
+bot = Client("search_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
+# Auth Filter
 def is_auth(_, client, message: Message):
     return message.from_user.id in SUDO_USERS
 auth_filter = filters.create(is_auth)
@@ -32,16 +38,17 @@ auth_filter = filters.create(is_auth)
 @bot.on_message(filters.command("start"))
 async def start(client, message):
     if message.from_user.id not in SUDO_USERS:
-        return await message.reply_text("🚫 Access Denied! Admin se permission lein.")
-    await message.reply_text(f"👋 **Hii {message.from_user.first_name}!**\nSearch ke liye `/search [Mobile/@Username/ID]` bhejien.")
+        return await message.reply_text("🚫 Access Denied! Admin se sampark karein.")
+    await message.reply_text(f"👋 **Hii {message.from_user.first_name}!**\nSearch ke liye `/search [Query]` likhein.")
 
 @bot.on_message(filters.command("add") & auth_filter)
 async def add_user(client, message):
-    if len(message.command) < 2: return
-    uid = int(message.command[1])
-    if uid not in SUDO_USERS:
-        SUDO_USERS.append(uid)
-        await message.reply_text(f"✅ User `{uid}` ko access de diya gaya.")
+    try:
+        new_id = int(message.command[1])
+        if new_id not in SUDO_USERS:
+            SUDO_USERS.append(new_id)
+            await message.reply_text(f"✅ User `{new_id}` added.")
+    except: await message.reply_text("Usage: `/add [User_ID]`")
 
 @bot.on_message(filters.command("broadcast") & auth_filter)
 async def broadcast(client, message):
@@ -54,31 +61,31 @@ async def broadcast(client, message):
 @bot.on_message(filters.command("search") & auth_filter)
 async def search_handler(client, message):
     if len(message.command) < 2:
-        return await message.reply_text("⚠️ `/search [Mobile/Username/ID]`")
+        return await message.reply_text("⚠️ Usage: `/search 8601513360`")
     
     query = message.text.split(None, 1)[1]
     
-    # Identify Search Type
-    s_type = "mobile"
-    if query.startswith("@"): s_type = "username"
-    elif query.isdigit() and len(query) > 10: s_type = "tg_id"
+    # Logging Activity
+    log_msg = (f"🕵️ **New Search**\n👤 **By:** {message.from_user.first_name}\n"
+               f"🆔 **ID:** `{message.from_user.id}`\n🔍 **Query:** `{query}`")
+    await client.send_message(LOG_CHAT_ID, log_msg)
 
-    # LOGGING
-    await client.send_message(LOG_CHAT_ID, f"🕵️ **New Search**\n👤 **By:** {message.from_user.first_name}\n🔍 **Query:** `{query}`\n📂 **Type:** `{s_type}`")
-
-    msg = await message.reply_text(f"🔎 Searching database for {s_type}...")
+    msg = await message.reply_text("🔎 **Searching database...**")
     
     try:
-        # API INTEGRATION (Apni link yahan dalein)
-        # res = requests.get(f"https://your-db.com/api?q={query}&type={s_type}").json()
+        # NOTE: Yahan apni API connect karein
+        # res = requests.get(f"https://your-api.com/api?q={query}").json()
         
-        # Default testing with Dummy Data
-        dummy = {"status": "found", "count": 1, "data": [{"name": "Test User", "id": "634731473361", "address": "New Delhi!India", "mobile": "8601513360"}]}
+        # Testing with Dummy Data
+        dummy = {"status": "found", "count": 1, "data": [{"name": "Test User", "fname": "Father Name", "id": "634731473361", "address": "Prayagraj!UP", "mobile": query}]}
         
         report = format_detailed_result(dummy)
         await msg.edit(report, disable_web_page_preview=False)
     except Exception as e:
-        await msg.edit(f"❌ Error: {e}")
+        await msg.edit(f"❌ Error: `{e}`")
 
-print("Bot is Running... 🚀")
-bot.run()
+if __name__ == "__main__":
+    keep_alive() # Starts Flask Web Server
+    print("🚀 Bot and Web Server starting...")
+    bot.run()
+
