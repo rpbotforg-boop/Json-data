@@ -7,9 +7,9 @@ HEAD = {"x-api-key": os.getenv("API_KEY")}
 
 app = Client(
     "trackerbot",
-    api_id=int(os.getenv("API_ID")),
-    api_hash=os.getenv("API_HASH"),
-    bot_token=os.getenv("BOT_TOKEN")
+    api_id=int(os.getenv("22447622")),
+    api_hash=os.getenv("543b62d58d3e723e766ba57a984ab65d"),
+    bot_token=os.getenv("8523789813:AAGN7UPz54iFcxfdmsHYGMbS3rpmhGEYT8k")
 )
 
 @app.on_message(filters.command("mobile"))
