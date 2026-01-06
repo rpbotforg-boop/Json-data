@@ -2,24 +2,23 @@ import urllib.parse
 
 def format_detailed_result(json_res):
     if not json_res or json_res.get("status") != "found":
-        return "❌ **Koi record nahi mila.**"
+        return "❌ **Record nahi mila!**"
     
     results = json_res.get("data", [])
-    count = json_res.get("count", 0)
-    
-    report = f"🔍 **Search Results Found: {count}**\n━━━━━━━━━━━━━━━━━━━━\n\n"
+    report = f"🔍 **Results Found: {len(results)}**\n━━━━━━━━━━━━━━━━━━━━\n\n"
     
     for i, person in enumerate(results, 1):
         name = person.get('name', 'N/A').upper()
         fname = person.get('fname', 'N/A').upper()
         mobile = person.get('mobile', 'N/A')
-        email = person.get('email', 'N/A')
         aadhar = person.get('id', 'N/A')
         
-        # Address Cleaning & Google Maps Link
-        raw_address = person.get('address', 'N/A')
-        clean_address = raw_address.replace('!', ' ').strip()
-        maps_query = urllib.parse.quote(clean_address)
+        # Address Cleaning
+        raw_addr = person.get('address', 'N/A')
+        clean_addr = raw_addr.replace('!', ' ').strip()
+        
+        # Maps link
+        maps_query = urllib.parse.quote(clean_addr)
         maps_link = f"https://www.google.com/maps/search/?api=1&query={maps_query}"
         
         report += (
@@ -28,9 +27,9 @@ def format_detailed_result(json_res):
             f"👨‍💼 **Father:** `{fname}`\n"
             f"📱 **Mobile:** `{mobile}`\n"
             f"🆔 **Aadhar/ID:** `{aadhar}`\n"
-            f"📧 **Email:** `{email if email else 'N/A'}`\n"
-            f"🏠 **Address:** `{clean_address}`\n"
+            f"🏠 **Address:** `{clean_addr}`\n"
             f"📍 **[View on Maps]({maps_link})**\n"
             "━━━━━━━━━━━━━━━━━━━━\n"
         )
     return report
+
